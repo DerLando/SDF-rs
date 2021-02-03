@@ -6,6 +6,7 @@ mod ops;
 mod primitives;
 mod expression;
 mod variable;
+mod node;
 
 pub use tree::Tree;
 pub use primitives::{circle};

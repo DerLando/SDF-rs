@@ -1,4 +1,4 @@
-use crate::{expression::{BinaryExpression, Expression, UnaryExpression}, ops::{BinaryOperator, UnaryOperator}, tree::{BinaryNode, Node, NodeType, Tree, UnaryNode}, variable::Variable, vec2::Vec2};
+use crate::{Tree, expression::{BinaryExpression, Expression, UnaryExpression}, node::{BinaryNode, Node, NodeType, UnaryNode}, ops::{BinaryOperator, UnaryOperator}, variable::Variable, vec2::Vec2};
 
 
 
