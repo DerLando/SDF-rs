@@ -30,7 +30,11 @@ impl Evaluable for UnaryExpression {
                 Variable::NumConst(n) => self.var,
                 Variable::VecConst(v) | Variable::Variable(v) => Variable::NumConst(v.length()),
             },
-            UnaryOperator::NoOp => self.var
+            UnaryOperator::NoOp => self.var,
+            UnaryOperator::Abs => match self.var {
+                Variable::NumConst(n) => Variable::NumConst(n.abs()),
+                Variable::VecConst(v) | Variable::Variable(v) => Variable::VecConst(v.abs())
+            }
         }
     }
 }
@@ -56,7 +60,10 @@ impl Evaluable for BinaryExpression {
     fn evaluate(&self) -> Variable {
         match self.op {
             BinaryOperator::Add => self.lhs + self.rhs,
-            BinaryOperator::Subtract => self.lhs - self.rhs
+            BinaryOperator::Sub => self.lhs - self.rhs,
+            BinaryOperator::Mul => self.lhs * self.rhs,
+            BinaryOperator::Max => self.lhs.max(&self.rhs),
+            BinaryOperator::Min => self.lhs.min(&self.rhs)
         }
     }
 }

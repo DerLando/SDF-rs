@@ -7,7 +7,7 @@ pub fn circle(center: &Vec2, radius: f32) -> Tree {
         BinaryExpression {
             lhs: Variable::default_variable(),
             rhs: Variable::VecConst(*center),
-            op: BinaryOperator::Subtract
+            op: BinaryOperator::Sub
         };
 
     let dist_from_center = UnaryNode {

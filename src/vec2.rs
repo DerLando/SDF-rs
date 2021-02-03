@@ -1,4 +1,4 @@
-use std::ops::{Add, Neg};
+use std::ops::{Add, Mul, Neg};
 
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -11,6 +11,27 @@ impl Vec2 {
     #[inline]
     pub fn length(&self) -> f32 {
         ((self.x * self.x + self.y * self.y) as f32).sqrt()
+    }
+
+    pub fn max(&self, other: &Self) -> Self {
+        Self {
+            x: self.x.max(other.x),
+            y: self.y.max(other.y)
+        }
+    }
+
+    pub fn min(&self, other: &Self) -> Self {
+        Self {
+            x: self.x.min(other.x),
+            y: self.y.min(other.y)
+        }
+    }
+
+    pub fn abs(&self) -> Self {
+        Self {
+            x: self.x.abs(),
+            y: self.y.abs()
+        }
     }
 }
 
@@ -61,5 +82,24 @@ impl Neg for Vec2 {
             x: -self.x,
             y: -self.y
         }
+    }
+}
+
+impl Mul<f32> for Vec2 {
+    type Output = Vec2;
+
+    fn mul(self, rhs: f32) -> Self::Output {
+        Self {
+            x: self.x * rhs as i32,
+            y: self.y * rhs as i32
+        }
+    }
+}
+
+impl Mul<Vec2> for Vec2 {
+    type Output = i32;
+
+    fn mul(self, rhs: Vec2) -> Self::Output {
+        self.x * rhs.x + self.y * rhs.y
     }
 }

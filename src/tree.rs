@@ -18,6 +18,74 @@ impl Tree {
             Variable::VecConst(v) | Variable::Variable(v) => panic!("Sign was vec2 instead {:?}", v)
         }
     }
+
+    pub fn union(a: Tree, b: Tree) -> Tree {
+        Tree{
+            root: Node::Binary(
+                BinaryNode {
+                    lhs: Box::new(NodeType::Branch(a.root)),
+                    rhs: Box::new(NodeType::Branch(b.root)),
+                    op: BinaryOperator::Min
+                }
+            )
+        }
+    }
+
+    pub fn intersection(a: Tree, b: Tree) -> Tree {
+        Tree {
+            root: Node::Binary(
+                BinaryNode {
+                    lhs: Box::new(NodeType::Branch(a.root)),
+                    rhs: Box::new(NodeType::Branch(b.root)),
+                    op: BinaryOperator::Max
+                }
+            )
+        }
+    }
+
+    pub fn blend(a: Tree, b: Tree, factor: f32) -> Tree {
+        let blend_dist = BinaryExpression {
+            lhs: Variable::NumConst(1.0),
+            rhs: Variable::NumConst(factor),
+            op: BinaryOperator::Sub
+        };
+
+        let a_blend = BinaryNode {
+            lhs: Box::new(
+                NodeType::Leaf(
+                    Expression::Binary(blend_dist)
+                )
+            ),
+            rhs: Box::new(NodeType::Branch(a.root)),
+            op: BinaryOperator::Mul
+        };
+
+        let b_blend = BinaryNode {
+            lhs: Box::new(
+                NodeType::Leaf(
+                    Expression::Unary(
+                        UnaryExpression {
+                            var: Variable::NumConst(factor),
+                            op: UnaryOperator::NoOp
+                        }))),
+            rhs: Box::new(
+                NodeType::Branch(
+                    b.root
+                )
+            ),
+            op: BinaryOperator::Mul
+        };
+
+        let combined_blend = BinaryNode {
+            lhs: Box::new(NodeType::Branch(Node::Binary(a_blend))),
+            rhs: Box::new(NodeType::Branch(Node::Binary(b_blend))),
+            op: BinaryOperator::Add
+        };
+
+        Tree {
+            root: Node::Binary(combined_blend)
+        }
+    }
 }
 
 #[derive(Debug)]

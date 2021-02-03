@@ -1,4 +1,4 @@
-use std::{ops::{Add, Neg, Sub}};
+use std::{ops::{Add, Mul, Neg, Sub}};
 
 use crate::vec2::Vec2;
 
@@ -20,6 +20,32 @@ impl Variable {
 
     pub fn default_variable() -> Variable {
         Variable::Variable((0, 0).into())
+    }
+
+    pub fn max(&self, other: &Variable) -> Variable {
+        match self {
+            Variable::NumConst(n) => match other {
+                Variable::NumConst(o) => Variable::NumConst(n.max(*o)),
+                Variable::VecConst(_) | Variable::Variable(_) => *self
+            },
+            Variable::VecConst(v) | Variable::Variable(v) => match other {
+                Variable::NumConst(n) => Variable::VecConst(Vec2{x: v.x.max(*n as i32), y: v.y.max(*n as i32)}),
+                Variable::VecConst(vo) | Variable::Variable(vo) => Variable::VecConst(v.max(vo))
+            }
+        }
+    }
+
+    pub fn min(&self, other: &Variable) -> Variable {
+        match self {
+            Variable::NumConst(n) => match other {
+                Variable::NumConst(o) => Variable::NumConst(n.min(*o)),
+                Variable::VecConst(_) | Variable::Variable(_) => *self
+            },
+            Variable::VecConst(v) | Variable::Variable(v) => match other {
+                Variable::NumConst(n) => Variable::VecConst(Vec2{x: v.x.min(*n as i32), y: v.y.min(*n as i32)}),
+                Variable::VecConst(vo) | Variable::Variable(vo) => Variable::VecConst(v.min(vo))
+            }
+        }
     }
 }
 
@@ -60,6 +86,23 @@ impl Sub<Variable> for Variable {
 
     fn sub(self, rhs: Variable) -> Self::Output {
         self + -rhs
+    }
+}
+
+impl Mul<Variable> for Variable {
+    type Output = Variable;
+
+    fn mul(self, rhs: Variable) -> Self::Output {
+        match self {
+            Variable::NumConst(n_l) => match rhs {
+                Variable::NumConst(n_r) => Variable::NumConst(n_l * n_r),
+                Variable::VecConst(v) | Variable::Variable(v) => Variable::VecConst(v * n_l)
+            },
+            Variable::VecConst(v_l) | Variable::Variable(v_l) => match rhs {
+                Variable::NumConst(n) => Variable::VecConst(v_l * n),
+                Variable::VecConst(v_r) | Variable::Variable(v_r) => Variable::NumConst((v_l * v_r) as f32)
+            }
+        }
     }
 }
 
