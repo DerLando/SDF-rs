@@ -7,7 +7,7 @@ pub struct Tree {
 }
 
 impl Tree {
-    pub fn sign_at(&mut self, position: impl Into<Vec2>) -> i32 {
+    pub fn sign_at(&mut self, position: impl Into<Vec2>) -> f32 {
     
         // replace all variables inside the tree with the given position
         self.root.replace_variable(position.into());
@@ -105,12 +105,12 @@ mod test {
     fn simple_tree() {
         let mut tree = Tree {
             root: Node::Unary(UnaryNode{
-                node: Box::new(NodeType::Leaf(Expression::Binary(BinaryExpression{lhs: Variable::default_variable(), rhs: Variable::NumConst(1), op:BinaryOperator::Add}))),
+                node: Box::new(NodeType::Leaf(Expression::Binary(BinaryExpression{lhs: Variable::default_variable(), rhs: Variable::NumConst(1.0), op:BinaryOperator::Add}))),
                 op: UnaryOperator::Length
             })
         };
 
-        assert_eq!(2, tree.sign_at((1, 0)));
-        assert_eq!(3, tree.sign_at((2, 0)));
+        assert_eq!(2.0, tree.sign_at((1, -1)));
+        assert_eq!(3.0, tree.sign_at((2, -1)));
     }
 }

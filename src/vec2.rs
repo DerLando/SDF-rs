@@ -9,8 +9,8 @@ pub struct Vec2 {
 
 impl Vec2 {
     #[inline]
-    pub fn length(&self) -> i32 {
-        ((self.x * self.x + self.y * self.y) as f32).sqrt() as i32
+    pub fn length(&self) -> f32 {
+        ((self.x * self.x + self.y * self.y) as f32).sqrt()
     }
 }
 
@@ -42,6 +42,14 @@ impl Add<i32> for Vec2 {
             x: self.x + rhs,
             y: self.y + rhs
         }
+    }
+}
+
+impl Add<f32> for Vec2 {
+    type Output = Vec2;
+
+    fn add(self, rhs: f32) -> Self::Output {
+        self.add(rhs as i32)
     }
 }
 

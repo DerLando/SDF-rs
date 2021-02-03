@@ -46,7 +46,7 @@ impl VariableContainer for UnaryExpression {
 impl Default for UnaryExpression {
     fn default() -> Self {
         Self {
-            var: Variable::NumConst(0),
+            var: Variable::NumConst(0.0),
             op: UnaryOperator::NoOp
         }
     }
@@ -76,8 +76,8 @@ impl VariableContainer for BinaryExpression {
 impl Default for BinaryExpression {
     fn default() -> Self {
         Self {
-            lhs: Variable::NumConst(0),
-            rhs: Variable::NumConst(0),
+            lhs: Variable::NumConst(0.0),
+            rhs: Variable::NumConst(0.0),
             op: BinaryOperator::Add
         }
     }

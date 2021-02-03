@@ -2,7 +2,7 @@ use crate::{expression::{BinaryExpression, Expression, UnaryExpression}, ops::{B
 
 
 
-pub fn circle(center: &Vec2, radius: u32) -> Tree {
+pub fn circle(center: &Vec2, radius: f32) -> Tree {
     let center_sub = 
         BinaryExpression {
             lhs: Variable::default_variable(),
@@ -17,7 +17,7 @@ pub fn circle(center: &Vec2, radius: u32) -> Tree {
 
     let radius_neg = 
         UnaryExpression {
-            var: Variable::NumConst(-(radius as i32)),
+            var: Variable::NumConst(-radius),
             op: UnaryOperator::NoOp
         };
 
@@ -39,10 +39,10 @@ mod test {
     #[test]
     fn simple_circle() {
         let center = (0, -1).into();
-        let mut circle = circle(&center, 10);
+        let mut circle = circle(&center, 10.0);
 
-        assert_eq!(-10, circle.sign_at((0, -1)));
-        assert_eq!(0, circle.sign_at((10, -1)));
-        assert_eq!(10, circle.sign_at((20, -1)));
+        assert_eq!(-10.0, circle.sign_at((0, -1)));
+        assert_eq!(0.0, circle.sign_at((10, -1)));
+        assert_eq!(10.0, circle.sign_at((20, -1)));
     }
 }

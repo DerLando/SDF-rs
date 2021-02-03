@@ -6,7 +6,7 @@ use crate::vec2::Vec2;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) enum Variable {
     VecConst(Vec2),
-    NumConst(i32),
+    NumConst(f32),
     Variable(Vec2)
 }
 
@@ -63,8 +63,8 @@ impl Sub<Variable> for Variable {
     }
 }
 
-impl From<i32> for Variable {
-    fn from(arg: i32) -> Self {
+impl From<f32> for Variable {
+    fn from(arg: f32) -> Self {
         Variable::NumConst(arg)
     }
 }
