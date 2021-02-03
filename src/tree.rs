@@ -1,12 +1,18 @@
-use std::ops::DerefMut;
-
-use crate::{expression::{BinaryExpression, Evaluable, Expression, UnaryExpression}, node::{BinaryNode, Node, NodeType}, ops::{BinaryOperator, UnaryOperator}, variable::{Variable, VariableContainer}, vec2::Vec2};
+use crate::{expression::{BinaryExpression, Evaluable, Expression, UnaryExpression}, node::{BinaryNode, BinaryNodeBuilder, Node}, ops::{BinaryOperator, UnaryOperator}, variable::{Variable, VariableContainer}, vec2::Vec2};
 
 pub struct Tree {
     pub(crate) root: Node
 }
 
 impl Tree {
+    fn combine(a: Tree, b: Tree, op: BinaryOperator) -> Self {
+        let root = BinaryNode::from_nodes(a.root, b.root, op);
+
+        Self {
+            root: Node::Binary(root)
+        }
+    }
+
     pub fn sign_at(&mut self, position: impl Into<Vec2>) -> f32 {
     
         // replace all variables inside the tree with the given position
@@ -20,27 +26,11 @@ impl Tree {
     }
 
     pub fn union(a: Tree, b: Tree) -> Tree {
-        Tree{
-            root: Node::Binary(
-                BinaryNode {
-                    lhs: Box::new(NodeType::Branch(a.root)),
-                    rhs: Box::new(NodeType::Branch(b.root)),
-                    op: BinaryOperator::Min
-                }
-            )
-        }
+        Self::combine(a, b, BinaryOperator::Min)
     }
 
     pub fn intersection(a: Tree, b: Tree) -> Tree {
-        Tree {
-            root: Node::Binary(
-                BinaryNode {
-                    lhs: Box::new(NodeType::Branch(a.root)),
-                    rhs: Box::new(NodeType::Branch(b.root)),
-                    op: BinaryOperator::Max
-                }
-            )
-        }
+        Self::combine(a, b, BinaryOperator::Max)
     }
 
     pub fn blend(a: Tree, b: Tree, factor: f32) -> Tree {
@@ -50,37 +40,28 @@ impl Tree {
             op: BinaryOperator::Sub
         };
 
-        let a_blend = BinaryNode {
-            lhs: Box::new(
-                NodeType::Leaf(
-                    Expression::Binary(blend_dist)
-                )
-            ),
-            rhs: Box::new(NodeType::Branch(a.root)),
-            op: BinaryOperator::Mul
+        let a_blend = 
+            BinaryNodeBuilder::new()
+                .with_lhs_leaf(Expression::Binary(blend_dist))
+                .with_rhs_node(a.root)
+                .build(BinaryOperator::Mul);
+
+        let factor_noop = UnaryExpression {
+            var: Variable::NumConst(factor),
+            op: UnaryOperator::NoOp
         };
 
-        let b_blend = BinaryNode {
-            lhs: Box::new(
-                NodeType::Leaf(
-                    Expression::Unary(
-                        UnaryExpression {
-                            var: Variable::NumConst(factor),
-                            op: UnaryOperator::NoOp
-                        }))),
-            rhs: Box::new(
-                NodeType::Branch(
-                    b.root
-                )
-            ),
-            op: BinaryOperator::Mul
-        };
+        let b_blend =
+            BinaryNodeBuilder::new()
+                .with_lhs_leaf(Expression::Unary(factor_noop))
+                .with_rhs_node(b.root)
+                .build(BinaryOperator::Mul);
 
-        let combined_blend = BinaryNode {
-            lhs: Box::new(NodeType::Branch(Node::Binary(a_blend))),
-            rhs: Box::new(NodeType::Branch(Node::Binary(b_blend))),
-            op: BinaryOperator::Add
-        };
+        let combined_blend = BinaryNode::from_nodes(
+            Node::Binary(a_blend),
+            Node::Binary(b_blend),
+            BinaryOperator::Add
+        ); 
 
         Tree {
             root: Node::Binary(combined_blend)
@@ -90,7 +71,7 @@ impl Tree {
 
 #[cfg(test)]
 mod test {
-    use crate::node::UnaryNode;
+    use crate::node::{NodeType, UnaryNode};
 
     use super::*;
 

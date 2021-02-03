@@ -27,7 +27,7 @@ impl Evaluable for UnaryExpression {
     fn evaluate(&self) -> Variable {
         match self.op {
             UnaryOperator::Length => match self.var {
-                Variable::NumConst(n) => self.var,
+                Variable::NumConst(_) => self.var,
                 Variable::VecConst(v) | Variable::Variable(v) => Variable::NumConst(v.length()),
             },
             UnaryOperator::NoOp => self.var,

@@ -1,4 +1,4 @@
-use crate::{Tree, expression::{BinaryExpression, Expression, UnaryExpression}, node::{BinaryNode, Node, NodeType, UnaryNode}, ops::{BinaryOperator, UnaryOperator}, variable::Variable, vec2::Vec2};
+use crate::{Tree, expression::{BinaryExpression, Expression, UnaryExpression}, node::{BinaryNodeBuilder, Node, UnaryNode}, ops::{BinaryOperator, UnaryOperator}, variable::Variable, vec2::Vec2};
 
 
 
@@ -10,10 +10,11 @@ pub fn circle(center: &Vec2, radius: f32) -> Tree {
             op: BinaryOperator::Sub
         };
 
-    let dist_from_center = UnaryNode {
-        node: Box::new(NodeType::Leaf(Expression::Binary(center_sub))),
-        op: UnaryOperator::Length
-    };
+    let dist_from_center = 
+        UnaryNode::from_expression(
+        Expression::Binary(center_sub),
+        UnaryOperator::Length
+        );
 
     let radius_neg = 
         UnaryExpression {
@@ -21,11 +22,12 @@ pub fn circle(center: &Vec2, radius: f32) -> Tree {
             op: UnaryOperator::NoOp
         };
 
-    let radius_sub = BinaryNode {
-        lhs: Box::new(NodeType::Branch(Node::Unary(dist_from_center))),
-        rhs: Box::new(NodeType::Leaf(Expression::Unary(radius_neg))),
-        op: BinaryOperator::Add
-    };
+    let radius_sub =
+        BinaryNodeBuilder::new()
+            .with_lhs_node(Node::Unary(dist_from_center))
+            .with_rhs_leaf(Expression::Unary(radius_neg))
+            .build(BinaryOperator::Add)
+            ;
 
     Tree {
         root: Node::Binary(radius_sub)
