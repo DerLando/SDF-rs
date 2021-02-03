@@ -14,4 +14,6 @@ pub(crate) enum UnaryOperator {
     Length,
     NoOp,
     Abs,
+    X,
+    Y
 }

@@ -8,6 +8,13 @@ pub struct Vec2 {
 }
 
 impl Vec2 {
+    pub const fn new(x: i32, y: i32) -> Self {
+        Self {
+            x,
+            y
+        }
+    }
+
     #[inline]
     pub fn length(&self) -> f32 {
         ((self.x * self.x + self.y * self.y) as f32).sqrt()

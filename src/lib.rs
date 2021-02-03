@@ -9,5 +9,5 @@ mod variable;
 mod node;
 
 pub use tree::Tree;
-pub use primitives::{circle};
+pub use primitives::{circle, rectangle};
 pub use vec2::Vec2;

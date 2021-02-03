@@ -4,7 +4,7 @@ use crate::{Vec2, expression::{BinaryExpression, Evaluable, Expression, UnaryExp
 
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct UnaryNode {
     pub node: Box<NodeType>,
     pub op: UnaryOperator
@@ -26,7 +26,7 @@ impl UnaryNode {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct BinaryNode {
     pub lhs: Box<NodeType>,
     pub rhs: Box<NodeType>,
@@ -93,13 +93,13 @@ impl BinaryNodeBuilder {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) enum Node {
     Unary(UnaryNode),
     Binary(BinaryNode)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) enum NodeType {
     Leaf(Expression),
     Branch(Node)

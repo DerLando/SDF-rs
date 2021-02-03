@@ -1,19 +1,37 @@
 use crate::{ops::{BinaryOperator, UnaryOperator}, variable::{Variable, VariableContainer}, vec2::Vec2};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct UnaryExpression {
     pub var: Variable,
     pub op: UnaryOperator
 }
 
-#[derive(Debug)]
+impl From<Vec2> for UnaryExpression {
+    fn from(arg: Vec2) -> Self {
+        UnaryExpression {
+            var: Variable::VecConst(arg),
+            op: UnaryOperator::NoOp
+        }
+    }
+}
+
+impl From<f32> for UnaryExpression {
+    fn from(arg: f32) -> Self {
+        UnaryExpression {
+            var: Variable::NumConst(arg),
+            op: UnaryOperator::NoOp
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub(crate) struct BinaryExpression {
     pub lhs: Variable,
     pub rhs: Variable,
     pub op: BinaryOperator
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) enum Expression {
     Unary(UnaryExpression),
     Binary(BinaryExpression)
@@ -34,6 +52,14 @@ impl Evaluable for UnaryExpression {
             UnaryOperator::Abs => match self.var {
                 Variable::NumConst(n) => Variable::NumConst(n.abs()),
                 Variable::VecConst(v) | Variable::Variable(v) => Variable::VecConst(v.abs())
+            },
+            UnaryOperator::X => match self.var {
+                Variable::NumConst(_) => self.var,
+                Variable::VecConst(v) | Variable::Variable(v) => Variable::NumConst(v.x as f32)
+            },
+            UnaryOperator::Y => match self.var {
+                Variable::NumConst(_) => self.var,
+                Variable::VecConst(v) | Variable::Variable(v) => Variable::NumConst(v.y as f32)
             }
         }
     }
