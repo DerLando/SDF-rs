@@ -1,13 +1,26 @@
-use std::{ops::{Add, Neg, Sub}, unreachable};
+use std::{ops::{Add, Neg, Sub}};
 
 use crate::vec2::Vec2;
 
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Variable {
-    Vector(Vec2),
-    Constant(i32),
-    Variable
+    VecConst(Vec2),
+    NumConst(i32),
+    Variable(Vec2)
+}
+
+impl Variable {
+    pub fn is_variable(&self) -> bool {
+        match self {
+            Variable::Variable(_) => true,
+            _ => false
+        }
+    }
+
+    pub fn default_variable() -> Variable {
+        Variable::Variable((0, 0).into())
+    }
 }
 
 impl Add<Variable> for Variable {
@@ -15,17 +28,14 @@ impl Add<Variable> for Variable {
 
     fn add(self, rhs: Variable) -> Self::Output {
         match self {
-            Variable::Constant(l) => match rhs {
-                Variable::Constant(r) => Variable::Constant(l + r),
-                Variable::Vector(r) => Variable::Vector(r + l),
-                _ => unreachable!()
+            Variable::NumConst(l) => match rhs {
+                Variable::NumConst(r) => Variable::NumConst(l + r),
+                Variable::VecConst(r) | Variable::Variable(r) => Variable::VecConst(r + l),
             },
-            Variable::Vector(l) => match rhs {
-                Variable::Constant(r) => Variable::Vector(l + r),
-                Variable::Vector(r) => Variable::Vector(l + r),
-                _ => unreachable!()
+            Variable::VecConst(l) | Variable::Variable(l) => match rhs {
+                Variable::NumConst(r) => Variable::VecConst(l + r),
+                Variable::VecConst(r) | Variable::Variable(r) => Variable::VecConst(l + r),
             },
-            _ => unreachable!()
         }
     }
 }
@@ -35,9 +45,8 @@ impl Neg for Variable {
 
     fn neg(self) -> Self::Output {
         match self {
-            Variable::Constant(n) => Variable::Constant(-n),
-            Variable::Vector(n) => Variable::Vector(-n),
-            _ => unreachable!()
+            Variable::NumConst(n) => Variable::NumConst(-n),
+            Variable::VecConst(v) | Variable::Variable(v) => Variable::VecConst(-v),
         }
     }
 }
@@ -52,12 +61,12 @@ impl Sub<Variable> for Variable {
 
 impl From<i32> for Variable {
     fn from(arg: i32) -> Self {
-        Variable::Constant(arg)
+        Variable::NumConst(arg)
     }
 }
 
 impl From<Vec2> for Variable {
     fn from(arg: Vec2) -> Self {
-        Variable::Vector(arg)
+        Variable::VecConst(arg)
     }
 }

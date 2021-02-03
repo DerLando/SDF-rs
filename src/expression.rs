@@ -1,46 +1,106 @@
-use crate::{ops::Operator, variable::Variable, vec2::Vec2};
+use crate::{ops::{BinaryOperator, UnaryOperator}, variable::Variable, vec2::Vec2};
 
-#[derive(Debug, Clone, Copy)]
-pub struct Expression {
+#[derive(Debug)]
+pub struct UnaryExpression {
+    pub var: Variable,
+    pub op: UnaryOperator
+}
+
+#[derive(Debug)]
+pub struct BinaryExpression {
     pub lhs: Variable,
     pub rhs: Variable,
-    pub op: Operator
+    pub op: BinaryOperator
 }
 
-impl Expression {
-    pub fn new(lhs: Variable, rhs: Variable, op: Operator) -> Self {
-        Self {
-            lhs,
-            rhs,
-            op
-        }
-    }
+#[derive(Debug)]
+pub enum Expression {
+    Unary(UnaryExpression),
+    Binary(BinaryExpression)
+}
 
-    pub fn evaluate(&self) -> Variable {
-        println!("Evaluating {:?}", self);
+pub trait Evaluable {
+    fn evaluate(&self) -> Variable;
+}
+
+pub trait VariableContainer {
+    fn replace_variable(&mut self, var: Vec2);
+}
+
+impl Evaluable for UnaryExpression {
+    fn evaluate(&self) -> Variable {
         match self.op {
-            Operator::Add => self.lhs + self.rhs,
-            Operator::Subtract => self.lhs - self.rhs,
-            Operator::Length => match self.lhs {
-                Variable::Vector(v) => Variable::Constant(v.length()),
-                Variable::Constant(c) => Variable::Constant(c),
-                _ => unreachable!()
-            }
+            UnaryOperator::Length => match self.var {
+                Variable::NumConst(n) => self.var,
+                Variable::VecConst(v) | Variable::Variable(v) => Variable::NumConst(v.length()),
+            },
+            UnaryOperator::NoOp => self.var
         }
-    }
-
-    pub fn can_evaluate(&self) -> bool {
-        !((self.lhs == Variable::Variable) | (self.rhs == Variable::Variable))
-    }
-
-    pub fn insert_variable(&mut self, var: Vec2) {
-        if self.lhs == Variable::Variable {self.lhs = Variable::Vector(var)}
-        if self.rhs == Variable::Variable {self.rhs = Variable::Vector(var)}
     }
 }
 
-impl Default for Expression {
+impl VariableContainer for UnaryExpression {
+    fn replace_variable(&mut self, var: Vec2) {
+        if !self.var.is_variable() {return;}
+
+        self.var = Variable::Variable(var)
+    }
+}
+
+impl Default for UnaryExpression {
     fn default() -> Self {
-        Expression::new(Variable::Constant(0), Variable::Constant(0), Operator::Add)
+        Self {
+            var: Variable::NumConst(0),
+            op: UnaryOperator::NoOp
+        }
+    }
+}
+
+impl Evaluable for BinaryExpression {
+    fn evaluate(&self) -> Variable {
+        match self.op {
+            BinaryOperator::Add => self.lhs + self.rhs,
+            BinaryOperator::Subtract => self.lhs - self.rhs
+        }
+    }
+}
+
+impl VariableContainer for BinaryExpression {
+    fn replace_variable(&mut self, var: Vec2) {
+        if self.lhs.is_variable() {
+            self.lhs = Variable::Variable(var);
+        }
+
+        if self.rhs.is_variable() {
+            self.rhs = Variable::Variable(var);
+        }
+    }
+}
+
+impl Default for BinaryExpression {
+    fn default() -> Self {
+        Self {
+            lhs: Variable::NumConst(0),
+            rhs: Variable::NumConst(0),
+            op: BinaryOperator::Add
+        }
+    }
+}
+
+impl Evaluable for Expression {
+    fn evaluate(&self) -> Variable {
+        match self {
+            Expression::Unary(e) => e.evaluate(),
+            Expression::Binary(e) => e.evaluate()
+        }
+    }
+}
+
+impl VariableContainer for Expression {
+    fn replace_variable(&mut self, var: Vec2) {
+        match self {
+            Expression::Unary(e) => e.replace_variable(var),
+            Expression::Binary(e) => e.replace_variable(var)
+        }
     }
 }

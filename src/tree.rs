@@ -1,68 +1,100 @@
 use std::ops::DerefMut;
 
-use crate::{expression::Expression, ops::Operator, variable::Variable, vec2::Vec2};
+use crate::{expression::{BinaryExpression, Evaluable, Expression, UnaryExpression, VariableContainer}, ops::{BinaryOperator, UnaryOperator}, variable::Variable, vec2::Vec2};
 
-/// TODO: How to define constant variables?
-#[derive(Debug, Clone)]
 pub struct Tree {
     pub root: Node
 }
 
 impl Tree {
-    /// TODO: How to actually feed down the vec?
-    pub fn sign_at(tree: &Tree, position: impl Into<Vec2>) -> Variable {
-        
-        // explicitly clone the tree, as we will replace it's variable occurences
-        let mut clone = tree.clone();
+    pub fn sign_at(&mut self, position: impl Into<Vec2>) -> i32 {
+    
+        // replace all variables inside the tree with the given position
+        self.root.replace_variable(position.into());
 
-        // propage the given variable
-        clone.propagate_variable(position.into());
-
-        // evaluate the clones' root node
-        clone.root.evaluate()
-    }
-
-    fn propagate_variable(&mut self, variable: Vec2) {
-        self.root.propagate_variable(variable.into())
+        // evaluate root and return
+        match self.root.evaluate() {
+            Variable::NumConst(n) => n,
+            Variable::VecConst(v) | Variable::Variable(v) => panic!("Sign was vec2 instead {:?}", v)
+        }
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct Node {
+#[derive(Debug)]
+pub struct UnaryNode {
+    pub node: Box<NodeType>,
+    pub op: UnaryOperator
+}
+
+#[derive(Debug)]
+pub struct BinaryNode {
     pub lhs: Box<NodeType>,
     pub rhs: Box<NodeType>,
-    pub op: Operator
+    pub op: BinaryOperator
 }
 
-impl Node {
-    pub fn evaluate(&self) -> Variable {
-        let mut expr = Expression::default();
-        expr.op = self.op;
-        
-        match &*self.lhs {
-            NodeType::Branch(node) => expr.lhs = node.evaluate(),
-            NodeType::Leaf(leaf) => expr.lhs = leaf.evaluate()
-        }
-        match &*self.rhs {
-            NodeType::Branch(node) => expr.rhs = node.evaluate(),
-            NodeType::Leaf(leaf) => expr.rhs = leaf.evaluate()
-        }
-
-        expr.evaluate()
-    }
-
-    pub fn propagate_variable(&mut self, variable: Vec2) {
-        match self.lhs.deref_mut() {
-            NodeType::Leaf(expr) => expr.insert_variable(variable),
-            NodeType::Branch(node) => node.propagate_variable(variable)
-        }
-    }
+#[derive(Debug)]
+pub enum Node {
+    Unary(UnaryNode),
+    Binary(BinaryNode)
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum NodeType {
     Leaf(Expression),
     Branch(Node)
+}
+
+impl Evaluable for Node {
+    fn evaluate(&self) -> Variable {
+        match self {
+            Node::Unary(un) => {
+                let mut expr = UnaryExpression::default();
+                expr.op = un.op;
+
+                match &*un.node {
+                    NodeType::Branch(node) => expr.var = node.evaluate(),
+                    NodeType::Leaf(leaf) => expr.var = leaf.evaluate()
+                }
+                expr.evaluate()
+            },
+            Node::Binary(bn) => {
+                let mut expr = BinaryExpression::default();
+                expr.op = bn.op;
+
+                match &*bn.lhs {
+                    NodeType::Branch(node) => expr.lhs = node.evaluate(),
+                    NodeType::Leaf(leaf) => expr.lhs = leaf.evaluate()
+                }
+                match &*bn.rhs {
+                    NodeType::Branch(node) => expr.rhs = node.evaluate(),
+                    NodeType::Leaf(leaf) => expr.rhs = leaf.evaluate()
+                }
+                expr.evaluate()
+            }
+        }
+    }
+}
+
+impl VariableContainer for Node {
+    fn replace_variable(&mut self, var: Vec2) {
+        match self {
+            Node::Unary(un) => match un.node.deref_mut() {
+                NodeType::Branch(node) => node.replace_variable(var),
+                NodeType::Leaf(leaf) => leaf.replace_variable(var)
+            },
+            Node::Binary(bn) => {
+                match bn.lhs.deref_mut() {
+                    NodeType::Branch(node) => node.replace_variable(var),
+                    NodeType::Leaf(leaf) => leaf.replace_variable(var)
+                }
+                match bn.rhs.deref_mut() {
+                    NodeType::Branch(node) => node.replace_variable(var),
+                    NodeType::Leaf(leaf) => leaf.replace_variable(var)
+                }
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -71,15 +103,14 @@ mod test {
 
     #[test]
     fn simple_tree() {
-        let tree = Tree {
-            root: Node {
-                lhs: Box::new(NodeType::Leaf(Expression::new(1.into(), Variable::Variable, Operator::Add))),
-                rhs: Box::new(NodeType::Leaf(Expression::default())),
-                op: Operator::Add
-            }
+        let mut tree = Tree {
+            root: Node::Unary(UnaryNode{
+                node: Box::new(NodeType::Leaf(Expression::Binary(BinaryExpression{lhs: Variable::default_variable(), rhs: Variable::NumConst(1), op:BinaryOperator::Add}))),
+                op: UnaryOperator::Length
+            })
         };
 
-        assert_eq!(Variable::Vector((2, 3).into()), Tree::sign_at(&tree, (1, 2)));
-        assert_eq!(Variable::Vector((-3, 1).into()), Tree::sign_at(&tree, (-4, 0)));
+        assert_eq!(2, tree.sign_at((1, 0)));
+        assert_eq!(3, tree.sign_at((2, 0)));
     }
 }
