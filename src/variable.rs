@@ -4,7 +4,7 @@ use crate::vec2::Vec2;
 
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Variable {
+pub(crate) enum Variable {
     VecConst(Vec2),
     NumConst(i32),
     Variable(Vec2)
@@ -21,6 +21,10 @@ impl Variable {
     pub fn default_variable() -> Variable {
         Variable::Variable((0, 0).into())
     }
+}
+
+pub(crate) trait VariableContainer {
+    fn replace_variable(&mut self, var: Vec2);
 }
 
 impl Add<Variable> for Variable {

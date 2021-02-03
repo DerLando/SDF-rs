@@ -1,9 +1,9 @@
 use std::ops::DerefMut;
 
-use crate::{expression::{BinaryExpression, Evaluable, Expression, UnaryExpression, VariableContainer}, ops::{BinaryOperator, UnaryOperator}, variable::Variable, vec2::Vec2};
+use crate::{expression::{BinaryExpression, Evaluable, Expression, UnaryExpression}, ops::{BinaryOperator, UnaryOperator}, variable::{Variable, VariableContainer}, vec2::Vec2};
 
 pub struct Tree {
-    pub root: Node
+    pub(crate) root: Node
 }
 
 impl Tree {
@@ -21,26 +21,26 @@ impl Tree {
 }
 
 #[derive(Debug)]
-pub struct UnaryNode {
+pub(crate) struct UnaryNode {
     pub node: Box<NodeType>,
     pub op: UnaryOperator
 }
 
 #[derive(Debug)]
-pub struct BinaryNode {
+pub(crate) struct BinaryNode {
     pub lhs: Box<NodeType>,
     pub rhs: Box<NodeType>,
     pub op: BinaryOperator
 }
 
 #[derive(Debug)]
-pub enum Node {
+pub(crate) enum Node {
     Unary(UnaryNode),
     Binary(BinaryNode)
 }
 
 #[derive(Debug)]
-pub enum NodeType {
+pub(crate) enum NodeType {
     Leaf(Expression),
     Branch(Node)
 }

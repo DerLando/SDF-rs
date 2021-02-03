@@ -3,13 +3,13 @@
 use crate::{tree::Tree};
 
 #[derive(Debug, Clone, Copy)]
-pub enum BinaryOperator {
+pub(crate) enum BinaryOperator {
     Add,
     Subtract,
 }
 
 #[derive(Debug, Clone, Copy)]
-pub enum UnaryOperator {
+pub(crate) enum UnaryOperator {
     Length,
     NoOp,
 }

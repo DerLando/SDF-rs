@@ -1,30 +1,26 @@
-use crate::{ops::{BinaryOperator, UnaryOperator}, variable::Variable, vec2::Vec2};
+use crate::{ops::{BinaryOperator, UnaryOperator}, variable::{Variable, VariableContainer}, vec2::Vec2};
 
 #[derive(Debug)]
-pub struct UnaryExpression {
+pub(crate) struct UnaryExpression {
     pub var: Variable,
     pub op: UnaryOperator
 }
 
 #[derive(Debug)]
-pub struct BinaryExpression {
+pub(crate) struct BinaryExpression {
     pub lhs: Variable,
     pub rhs: Variable,
     pub op: BinaryOperator
 }
 
 #[derive(Debug)]
-pub enum Expression {
+pub(crate) enum Expression {
     Unary(UnaryExpression),
     Binary(BinaryExpression)
 }
 
-pub trait Evaluable {
+pub(crate) trait Evaluable {
     fn evaluate(&self) -> Variable;
-}
-
-pub trait VariableContainer {
-    fn replace_variable(&mut self, var: Vec2);
 }
 
 impl Evaluable for UnaryExpression {
